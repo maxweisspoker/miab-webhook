@@ -147,7 +147,7 @@ func (c *miabSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 	}
 	existingRecordsSlice := existingRecords.([]map[string]interface{})
 	for _, record := range existingRecordsSlice {
-		if record["qname"].(string) == ch.ResolvedFQDN {
+		if record["qname"].(string) == strings.TrimRight(ch.ResolvedFQDN, ".") {
 			if record["value"].(string) == ch.Key {
 				if string(ch.UID) != "" {
 					c.uidtracker[ch.UID] = time.Now()
