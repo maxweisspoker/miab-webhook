@@ -3,6 +3,7 @@ module github.com/maxweisspoker/miab-webhook
 go 1.17
 
 require (
+	github.com/breml/rootcerts v0.2.3
 	github.com/cert-manager/cert-manager v1.8.0
 	github.com/maxweisspoker/miabhttp v0.0.0-20220601042736-05fc558f6f8a
 	k8s.io/apiextensions-apiserver v0.24.1

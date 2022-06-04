@@ -1,6 +1,9 @@
 package main
 
 import (
+	// Embed Mozilla TLS certs for completely static FROM scratch build
+	_ "github.com/breml/rootcerts"
+
 	"context"
 	"encoding/json"
 	"errors"
@@ -28,6 +31,13 @@ var GroupName = os.Getenv("GROUP_NAME")
 func main() {
 	if GroupName == "" {
 		panic("GROUP_NAME must be specified")
+	}
+
+	// Auto-set in the Helm chart to be the chart namespace, but if you've put
+	// it somewhere else and configured the RBAC permissions to access it, you
+	// can manually set this to something else
+	if os.Getenv("CREDS_SECRET_NAMESPACE") == "" {
+		panic("CREDS_SECRET_NAMESPACE must be specified")
 	}
 
 	// This will register our custom DNS provider with the webhook serving
@@ -81,7 +91,7 @@ type miabSolver struct {
 //     solvers:
 //     - dns01:
 //         webhook:
-//           groupName: $UNIQUE_GROUP_NAME
+//           groupName: $UNIQUE_GROUP_NAME_EG_YOUR_BOX_DOMAIN
 //           solverName: mail-in-a-box
 //           config:
 //             MiabContextSecretName: "miab-context-secret" # This is the name of the Secret resource. See testdata folder for example.
@@ -119,12 +129,12 @@ func (c *miabSolver) Present(ch *v1alpha1.ChallengeRequest) error {
 		return errors.New("not performing Present() because <-stopCh has signalled and we are in the process of terminating")
 	}
 
-	if ch.Action != "present" && ch.Action != "" {
-		return errors.New("present method called without 'present' ChallengeRequest.Action")
+	if strings.ToLower(string(ch.Action)) != "present" && string(ch.Action) != "" {
+		return errors.New("present method called with invalid ChallengeRequest.Action: " + string(ch.Action))
 	}
 
-	if ch.Type != "dns-01" && ch.Type != "" {
-		return errors.New("unknown ChallengeRequest.Type")
+	if strings.ToLower(string(ch.Type)) != "dns-01" && strings.ToLower(string(ch.Type)) != "dns01" && string(ch.Type) != "" {
+		return errors.New("unknown ChallengeRequest.Type: " + string(ch.Type))
 	}
 
 	if string(ch.UID) != "" {
@@ -196,12 +206,12 @@ func (c *miabSolver) CleanUp(ch *v1alpha1.ChallengeRequest) error {
 	}
 
 	// Create miab context if necessary. Can't do this in Init(), so we must do it here
-	if ch.Action != "cleanup" && ch.Action != "" {
-		return errors.New("cleanup method called without 'cleanup' ChallengeRequest.Action")
+	if strings.ToLower(string(ch.Action)) != "cleanup" && strings.ToLower(string(ch.Action)) != "clean-up" && string(ch.Action) != "" {
+		return errors.New("cleanup method called with invalid ChallengeRequest.Action: " + string(ch.Action))
 	}
 
-	if ch.Type != "dns-01" && ch.Type != "" {
-		return errors.New("unknown ChallengeRequest.Type")
+	if strings.ToLower(string(ch.Type)) != "dns-01" && strings.ToLower(string(ch.Type)) != "dns01" && string(ch.Type) != "" {
+		return errors.New("unknown ChallengeRequest.Type: " + string(ch.Type))
 	}
 
 	if string(ch.UID) != "" {
@@ -370,20 +380,19 @@ func (c *miabSolver) setMiabContext(ch *v1alpha1.ChallengeRequest) error {
 			return err
 		}
 
-		secret, err := c.k8sclient.CoreV1().Secrets(ch.ResourceNamespace).Get(context.TODO(), cfg.MiabContextSecretName, metav1.GetOptions{})
+		secret, err := c.k8sclient.CoreV1().Secrets(os.Getenv("CREDS_SECRET_NAMESPACE")).Get(context.TODO(), cfg.MiabContextSecretName, metav1.GetOptions{})
 		if err != nil {
-			return err
+			return errors.New("error importing the miab credentials secret: " + err.Error())
 		}
 
 		c.miabcontext, err = miab.CreateMiabContext(
-			secret.StringData["server"],
-			secret.StringData["apipath"],
-			secret.StringData["username"],
-			secret.StringData["password"],
+			string(secret.Data["server"]), "",
+			string(secret.Data["username"]),
+			string(secret.Data["password"]),
 			"", "") // TODO: Add the ability to set API key or OTP code and add recycling the API key to the backgroundRunner
 		if err != nil {
 			// c.miabcontext = nil    // CreateMiabContext() returns nil for Context on error, so no need to nil it manually
-			return err
+			return errors.New("miabhttp.CreateMiabContext() error: " + err.Error())
 		}
 	}
 	return nil

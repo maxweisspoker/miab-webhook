@@ -15,7 +15,7 @@ certManager:
 image:
   repository: maxweiss/miab-webhook
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 nameOverride: ""
 fullnameOverride: ""

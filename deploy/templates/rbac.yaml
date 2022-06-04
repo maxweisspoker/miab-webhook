@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -88,3 +89,102 @@ subjects:
     kind: ServiceAccount
     name: {{ .Values.certManager.serviceAccountName }}
     namespace: {{ .Values.certManager.namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "miab-webhook.fullname" . }}:flowcontrol-solver
+  labels:
+    app: {{ include "miab-webhook.name" . }}
+    chart: {{ include "miab-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+  - apiGroups:
+      - "flowcontrol.apiserver.k8s.io"
+    resources:
+      - 'prioritylevelconfigurations'
+      - 'flowschemas'
+    verbs:
+      - 'list'
+      - 'watch'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "miab-webhook.fullname" . }}:flowcontrol-solver
+  labels:
+    app: {{ include "miab-webhook.name" . }}
+    chart: {{ include "miab-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "miab-webhook.fullname" . }}:flowcontrol-solver
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "miab-webhook.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+# Grant cert-manager permission to read secrets from miab-solver namespace
+# because we will store the signed cert in a secret in our namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "miab-webhook.fullname" . }}:certman-miab-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "miab-webhook.name" . }}
+    chart: {{ include "miab-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - 'secrets'
+    verbs:
+      - 'get'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "miab-webhook.fullname" . }}:certman-miab-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "miab-webhook.name" . }}
+    chart: {{ include "miab-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "miab-webhook.fullname" . }}:certman-miab-auth
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ .Values.certManager.serviceAccountName }}
+    namespace: {{ .Values.certManager.namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "miab-webhook.fullname" . }}:miab-ns-auth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "miab-webhook.name" . }}
+    chart: {{ include "miab-webhook.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "miab-webhook.fullname" . }}:certman-miab-auth
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "miab-webhook.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---

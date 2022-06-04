@@ -90,6 +90,8 @@ github.com/bketelsen/crypt v0.0.4/go.mod h1:aI6NrJ0pMGgvZKL1iVgXLnfIFJtfV+bKCoqO
 github.com/blang/semver v3.5.1+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=
 github.com/blang/semver/v4 v4.0.0 h1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=
 github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2yvyW5YoQ=
+github.com/breml/rootcerts v0.2.3 h1:1vkYjKOiHVSyuz9Ue4AOrViEvUm8gk8phTg0vbcuU0A=
+github.com/breml/rootcerts v0.2.3/go.mod h1:24FDtzYMpqIeYC7QzaE8VPRQaFZU5TIUDlyk8qwjD88=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cert-manager/cert-manager v1.8.0 h1:A5FH4FUYGE/4lFYO6QzAWRxvSZfKlb9DZukv6lBPEiw=
 github.com/cert-manager/cert-manager v1.8.0/go.mod h1:95Ds29nFWH6YqEgLiQ9WTtsDnTcxrkUPRNfYaKVOzeM=

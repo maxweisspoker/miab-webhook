@@ -20,19 +20,28 @@ spec:
         release: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ include "miab-webhook.fullname" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 4000
+        runAsGroup: 3000
+        fsGroup: 2000
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
+            - --secure-port=8443
             - --tls-cert-file=/tls/tls.crt
             - --tls-private-key-file=/tls/tls.key
           env:
             - name: GROUP_NAME
               value: {{ .Values.groupName | quote }}
+            - name: CREDS_SECRET_NAMESPACE
+              value: {{ .Release.Namespace | quote }}
           ports:
             - name: https
-              containerPort: 443
+              containerPort: 8443
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -44,6 +53,9 @@ spec:
               scheme: HTTPS
               path: /healthz
               port: https
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
           volumeMounts:
             - name: certs
               mountPath: /tls
