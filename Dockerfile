@@ -1,4 +1,4 @@
-FROM golang:1.17-alpine AS builder
+FROM golang:1.18-alpine AS builder
 
 RUN apk update && \
     apk upgrade && \
@@ -11,7 +11,7 @@ WORKDIR /workspace
 COPY . .
 
 RUN go mod download && \
-    go mod tidy -compat=1.17
+    go mod tidy -compat=1.18
 
 RUN env CGO_ENABLED=0 go build -o webhook -ldflags '-s -w -extldflags "-static"' . && \
     chown root:root /workspace/webhook && \
