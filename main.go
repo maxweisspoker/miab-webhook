@@ -1,9 +1,10 @@
 package main
 
 import (
-	// Embed Mozilla TLS certs and tzdata for completely static FROM scratch build
+	// Embed tzdata and Mozilla TLS certs for completely static FROM scratch build
+	_ "time/tzdata"
+
 	_ "github.com/breml/rootcerts"
-    _ "time/tzdata"
 
 	"context"
 	"encoding/json"
@@ -85,18 +86,20 @@ type miabSolver struct {
 // apiVersion: cert-manager.io/v1
 // kind: Issuer
 // metadata:
-//   name: example-issuer
-// spec:
-//   acme:
-//    ...
-//     solvers:
-//     - dns01:
-//         webhook:
-//           groupName: $UNIQUE_GROUP_NAME_EG_YOUR_BOX_DOMAIN
-//           solverName: mail-in-a-box
-//           config:
-//             MiabContextSecretName: "miab-context-secret" # This is the name of the Secret resource. See testdata folder for example.
 //
+//	name: example-issuer
+//
+// spec:
+//
+//	acme:
+//	 ...
+//	  solvers:
+//	  - dns01:
+//	      webhook:
+//	        groupName: $UNIQUE_GROUP_NAME_EG_YOUR_BOX_DOMAIN
+//	        solverName: mail-in-a-box
+//	        config:
+//	          MiabContextSecretName: "miab-context-secret" # This is the name of the Secret resource. See testdata folder for example.
 type miabSolverConfig struct {
 	// Key/value data for secret are listed in miabhttp.CreateMiabContext() params
 	// See testdata folder for example.
