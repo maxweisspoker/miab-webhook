@@ -27,6 +27,7 @@ COPY --chown=0:0 --from=builder /workspace/webhook /webhook
 #RUN chmod 555 /webhook && apk update && apk --no-cache upgrade && apk add --no-cache ca-certificates tzdata && update-ca-certificates
 
 # If you are building for alpine and want to use system ca certs, comment out the top import "github.com/breml/rootcerts" in main.go
+# Additionally, comment out the "time/tzdata" import to use the system time.
 
 USER 1000
 

@@ -1,8 +1,9 @@
 package main
 
 import (
-	// Embed Mozilla TLS certs for completely static FROM scratch build
+	// Embed Mozilla TLS certs and tzdata for completely static FROM scratch build
 	_ "github.com/breml/rootcerts"
+    _ "time/tzdata"
 
 	"context"
 	"encoding/json"
