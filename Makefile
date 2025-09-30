@@ -1,12 +1,12 @@
-OS ?= $(shell go1.21 env GOOS)
-ARCH ?= $(shell go1.21 env GOARCH)
+OS ?= $(shell go1.25 env GOOS)
+ARCH ?= $(shell go1.25 env GOARCH)
 
 IMAGE_NAME ?= "maxweiss/miab-webhook"
 IMAGE_TAG ?= "latest"
 
 OUT := $(shell pwd)/_out
 
-KUBE_VERSION=1.28.3
+KUBE_VERSION=1.34.1
 
 $(shell mkdir -p "$(OUT)")
 export TEST_ASSET_ETCD=_test/kubebuilder/bin/etcd
@@ -14,7 +14,7 @@ export TEST_ASSET_KUBE_APISERVER=_test/kubebuilder/bin/kube-apiserver
 export TEST_ASSET_KUBECTL=_test/kubebuilder/bin/kubectl
 
 test: _test/kubebuilder
-	go1.21 test -v .
+	go1.25 test -v .
 
 _test/kubebuilder:
 	curl -fsSL https://go.kubebuilder.io/test-tools/$(KUBE_VERSION)/$(OS)/$(ARCH) -o kubebuilder-tools.tar.gz
